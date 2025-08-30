@@ -16,12 +16,11 @@ async function analyzeNews() {
             body: JSON.stringify({ url, text, tone })
         });
 
-        const textData = await response.text();
         let data;
         try {
-            data = JSON.parse(textData);
+            data = await response.json();
         } catch {
-            data = { error: "Invalid response from server" };
+            data = { error: "Invalid response from server", summary: "", bias: "" };
         }
 
         if (data.error) {
@@ -38,6 +37,7 @@ async function analyzeNews() {
                 </div>
             `;
         }
+
     } catch (err) {
         result.innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
     } finally {
