@@ -7,7 +7,7 @@ from textblob import TextBlob
 import google.generativeai as genai
 
 # Configure Gemini API key from environment variable
-genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
+genai.configure(api_key=os.environ.get("AIzaSyAscJFe-BQSUqfxr7ImMGk78LWsmxNNy3Q"))
 
 # Initialize Flask app with frontend folder
 app = Flask(__name__, static_folder="frontend")
