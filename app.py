@@ -6,9 +6,10 @@ from bs4 import BeautifulSoup
 from textblob import TextBlob
 import google.generativeai as genai
 
-# Configure Gemini API key
+# Configure Gemini API key (set as environment variable)
 genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
 
+# Set static folder to frontend
 app = Flask(__name__, static_folder="frontend")
 CORS(app)
 
@@ -20,7 +21,8 @@ def fetch_text_from_url(url):
         soup = BeautifulSoup(r.text, "html.parser")
         paragraphs = soup.find_all("p")
         return " ".join([p.get_text() for p in paragraphs]).strip()
-    except:
+    except Exception as e:
+        print("Error fetching URL:", e)
         return None
 
 # Simple bias detection
@@ -51,12 +53,13 @@ def analyze_news():
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(prompt)
         summary = response.text
-    except:
+    except Exception as e:
+        print("Gemini API error:", e)
         summary = "Summary unavailable: Could not reach Gemini API."
 
     return jsonify({"summary": summary, "bias": detect_bias(text)})
 
-# Serve frontend
+# Serve frontend files
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
