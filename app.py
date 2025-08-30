@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from textblob import TextBlob
 import google.generativeai as genai
 
-# Configure Gemini API key (set as environment variable)
+# Configure Gemini API key
 genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
 
 app = Flask(__name__, static_folder="frontend")
@@ -19,22 +19,16 @@ def fetch_text_from_url(url):
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
         paragraphs = soup.find_all("p")
-        text = " ".join([p.get_text() for p in paragraphs])
-        return text.strip() if text else None
-    except Exception as e:
-        print("Error fetching URL:", e)
+        return " ".join([p.get_text() for p in paragraphs]).strip()
+    except:
         return None
 
 # Simple bias detection
 def detect_bias(text):
-    analysis = TextBlob(text)
-    polarity = analysis.sentiment.polarity
-    if polarity > 0.1:
-        return "Positive bias"
-    elif polarity < -0.1:
-        return "Negative bias"
-    else:
-        return "Neutral"
+    polarity = TextBlob(text).sentiment.polarity
+    if polarity > 0.1: return "Positive bias"
+    if polarity < -0.1: return "Negative bias"
+    return "Neutral"
 
 # API endpoint
 @app.route("/analyze", methods=["POST"])
@@ -57,13 +51,10 @@ def analyze_news():
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(prompt)
         summary = response.text
-    except Exception as e:
-        # Fallback summary if Gemini API fails
+    except:
         summary = "Summary unavailable: Could not reach Gemini API."
-        print("Gemini API error:", e)
 
-    bias = detect_bias(text)
-    return jsonify({"summary": summary, "bias": bias})
+    return jsonify({"summary": summary, "bias": detect_bias(text)})
 
 # Serve frontend
 @app.route("/", defaults={"path": ""})
@@ -74,7 +65,7 @@ def serve(path):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, "index.html")
 
-# Run the app
+# Run app
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
