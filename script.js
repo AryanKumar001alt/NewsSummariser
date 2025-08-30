@@ -10,14 +10,19 @@ async function analyzeNews() {
     result.innerHTML = "";
 
     try {
-        // Relative path ensures it works both locally and on Render
         const response = await fetch("/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url, text, tone })
         });
 
-        const data = await response.json();
+        const textData = await response.text();
+        let data;
+        try {
+            data = JSON.parse(textData);
+        } catch {
+            data = { error: "Invalid response from server" };
+        }
 
         if (data.error) {
             result.innerHTML = `<p style="color:red">${data.error}</p>`;

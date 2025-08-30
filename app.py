@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from textblob import TextBlob
 import google.generativeai as genai
 
-# Configure Gemini API Key via environment variable
+# Configure Gemini API key (set as environment variable)
 genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
 
 app = Flask(__name__, static_folder="frontend")
@@ -36,7 +36,7 @@ def detect_bias(text):
     else:
         return "Neutral"
 
-# Backend API endpoint
+# API endpoint
 @app.route("/analyze", methods=["POST"])
 def analyze_news():
     data = request.json
@@ -58,7 +58,9 @@ def analyze_news():
         response = model.generate_content(prompt)
         summary = response.text
     except Exception as e:
-        return jsonify({"error": f"Gemini API error: {str(e)}"}), 500
+        # Fallback summary if Gemini API fails
+        summary = "Summary unavailable: Could not reach Gemini API."
+        print("Gemini API error:", e)
 
     bias = detect_bias(text)
     return jsonify({"summary": summary, "bias": bias})
@@ -67,12 +69,12 @@ def analyze_news():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
-    if path != "" and os.path.exists("frontend/" + path):
-        return send_from_directory("frontend", path)
-    else:
-        return send_from_directory("frontend", "index.html")
+    file_path = os.path.join(app.static_folder, path)
+    if path != "" and os.path.exists(file_path):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, "index.html")
 
-# Run backend
+# Run the app
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
