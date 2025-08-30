@@ -9,9 +9,13 @@ import google.generativeai as genai
 # Configure Gemini API key from environment variable
 genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
 
-# Create Flask app and set frontend folder
+# Initialize Flask app with frontend folder
 app = Flask(__name__, static_folder="frontend")
 CORS(app)
+
+# -----------------------------
+# Helper Functions
+# -----------------------------
 
 # Fetch text from URL
 def fetch_text_from_url(url):
@@ -34,7 +38,9 @@ def detect_bias(text):
         return "Negative bias"
     return "Neutral"
 
-# API endpoint
+# -----------------------------
+# API Endpoint
+# -----------------------------
 @app.route("/analyze", methods=["POST"])
 def analyze_news():
     try:
@@ -59,31 +65,35 @@ def analyze_news():
         except Exception as e:
             print("Gemini API error:", e)
             summary = "Summary unavailable"
-        
+
         bias = detect_bias(text)
         return jsonify({"summary": summary, "bias": bias, "error": ""})
-    
+
     except Exception as e:
         print("Unexpected server error:", e)
         return jsonify({"summary": "", "bias": "", "error": "Server error occurred"}), 500
 
-# Serve frontend files
+# -----------------------------
+# Serve Frontend
+# -----------------------------
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve(path):
+    # Serve specific frontend files if they exist
     file_path = os.path.join(app.static_folder, path)
     if path != "" and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
-    
+
+    # Fallback to index.html
     index_file = os.path.join(app.static_folder, "index.html")
     if os.path.exists(index_file):
         return send_from_directory(app.static_folder, "index.html")
-    
+
     return "Frontend not found", 404
 
-
-
-# Run app
+# -----------------------------
+# Run App
+# -----------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
