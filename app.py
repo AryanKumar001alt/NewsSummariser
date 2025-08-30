@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from textblob import TextBlob
 import google.generativeai as genai
 
-# Configure Gemini API Key from environment variable
+# Configure Gemini API Key via environment variable
 genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
 
 app = Flask(__name__, static_folder="frontend")
@@ -36,7 +36,7 @@ def detect_bias(text):
     else:
         return "Neutral"
 
-# API endpoint
+# Backend API endpoint
 @app.route("/analyze", methods=["POST"])
 def analyze_news():
     data = request.json

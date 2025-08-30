@@ -1,4 +1,4 @@
- async function analyzeNews() {
+async function analyzeNews() {
     const url = document.getElementById("url").value;
     const text = document.getElementById("text").value;
     const tone = document.getElementById("tone").value;
@@ -10,6 +10,7 @@
     result.innerHTML = "";
 
     try {
+        // Relative path ensures it works both locally and on Render
         const response = await fetch("/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
