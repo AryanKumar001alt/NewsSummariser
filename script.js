@@ -6,11 +6,13 @@ async function analyzeNews() {
     const loader = document.getElementById("loader");
     const result = document.getElementById("result");
 
+    // Show loader
     loader.style.display = "block";
     result.innerHTML = "";
 
     try {
-        const response = await fetch("http://127.0.0.1:5000/analyze", {
+        // Call backend API (relative path works on Render)
+        const response = await fetch("/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url, text, tone })
@@ -19,8 +21,10 @@ async function analyzeNews() {
         const data = await response.json();
 
         if (data.error) {
+            // Show error
             result.innerHTML = `<p style="color:red">${data.error}</p>`;
         } else {
+            // Show summary and bias
             result.innerHTML = `
                 <div class="summary-card">
                     <h3>Summary:</h3>
@@ -33,8 +37,10 @@ async function analyzeNews() {
             `;
         }
     } catch (err) {
+        // Catch network or other errors
         result.innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
     } finally {
+        // Hide loader
         loader.style.display = "none";
     }
 }

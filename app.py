@@ -1,18 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import os
 import requests
 from bs4 import BeautifulSoup
 from textblob import TextBlob
 import google.generativeai as genai
 
-# 🔹 Configure Gemini API Key
-genai.configure(api_key="AIzaSyAscJFe-BQSUqfxr7ImMGk78LWsmxNNy3Q")  #this the api key for configure the genAI
+# Configure Gemini API Key
+genai.configure(api_key="AIzaSyAscJFe-BQSUqfxr7ImMGk78LWsmxNNy3Q")
 
-#This is make the Create the aap.
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend")
 CORS(app)
 
-# 🔹 Function to fetch text from URL
+# Fetch text from URL
 def fetch_text_from_url(url):
     try:
         r = requests.get(url, timeout=10)
@@ -25,7 +25,7 @@ def fetch_text_from_url(url):
         print("Error fetching URL:", e)
         return None
 
-# 🔹 Simple bias detection
+# Simple bias detection
 def detect_bias(text):
     analysis = TextBlob(text)
     polarity = analysis.sentiment.polarity
@@ -36,13 +36,13 @@ def detect_bias(text):
     else:
         return "Neutral"
 
-# 🔹 API endpoint for analyzing news
+# API endpoint
 @app.route("/analyze", methods=["POST"])
 def analyze_news():
     data = request.json
     url = data.get("url")
     text = data.get("text")
-    tone = data.get("tone", "neutral")  # matches frontend key
+    tone = data.get("tone", "neutral")
 
     if url and not text:
         text = fetch_text_from_url(url)
@@ -63,7 +63,16 @@ def analyze_news():
     bias = detect_bias(text)
     return jsonify({"summary": summary, "bias": bias})
 
-# 🔹 Run backend
-if __name__ == "__main__":
-    app.run(debug=True)
+# Serve frontend
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve(path):
+    if path != "" and os.path.exists("frontend/" + path):
+        return send_from_directory("frontend", path)
+    else:
+        return send_from_directory("frontend", "index.html")
 
+# Run backend
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
