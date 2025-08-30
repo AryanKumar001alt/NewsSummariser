@@ -74,11 +74,13 @@ def serve(path):
     file_path = os.path.join(app.static_folder, path)
     if path != "" and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
-    # Fallback to index.html
+    
     index_file = os.path.join(app.static_folder, "index.html")
     if os.path.exists(index_file):
         return send_from_directory(app.static_folder, "index.html")
+    
     return "Frontend not found", 404
+
 
 
 # Run app
