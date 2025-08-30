@@ -6,8 +6,8 @@ from bs4 import BeautifulSoup
 from textblob import TextBlob
 import google.generativeai as genai
 
-# Configure Gemini API Key
-genai.configure(api_key="AIzaSyAscJFe-BQSUqfxr7ImMGk78LWsmxNNy3Q")
+# Configure Gemini API Key from environment variable
+genai.configure(api_key=os.environ.get("GENAI_API_KEY"))
 
 app = Flask(__name__, static_folder="frontend")
 CORS(app)
